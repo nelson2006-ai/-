@@ -9,7 +9,7 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Zen+Maru+Gothic:wght@500&display=swap">
 <link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 
@@ -28,6 +28,8 @@
 	--font-ui: "Huninn", "jf open 粉圓", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
 	color-scheme: light;
 }
+/* 日文（第 7.5 段）：跟遊戲裡一樣用 Zen Maru Gothic */
+:root[lang="ja"] { --font-ui: "Zen Maru Gothic", "Huninn", "Hiragino Maru Gothic ProN", "Meiryo", sans-serif; }
 html, body { height: 100%; }
 body {
 	margin: 0;
@@ -96,8 +98,8 @@ h1 { margin: 0; font-size: 28px; font-weight: 400; letter-spacing: 0.08em; text-
 }
 </style>
 
-<canvas id="canvas">你的瀏覽器不支援 canvas。</canvas>
-<noscript>需要開啟 JavaScript 才能遊玩。</noscript>
+<canvas id="canvas" data-i18n="canvas">你的瀏覽器不支援 canvas。</canvas>
+<noscript>需要開啟 JavaScript 才能遊玩。／JavaScript を有効にしてください。</noscript>
 
 <div id="status" role="status" aria-live="polite">
 	<div class="card">
@@ -110,19 +112,59 @@ h1 { margin: 0; font-size: 28px; font-weight: 400; letter-spacing: 0.08em; text-
 			<rect x="84" y="66" width="16" height="16" rx="3" fill="#cfeaf5" stroke="#5c4536" stroke-width="4"/>
 			<circle cx="70" cy="91" r="2.5" fill="#5c4536"/>
 		</svg>
-		<h1>暖暖小舖</h1>
+		<h1 data-i18n="title">暖暖小舖</h1>
 		<p class="sub">Cozy Corner Mart</p>
 		<div class="bar indeterminate" id="bar"><i></i></div>
-		<p id="status-text">正在打開店門…</p>
+		<p id="status-text" data-i18n="opening">正在打開店門…</p>
 		<p id="status-notice"></p>
-		<p class="hint">第一次載入約 15 MB，之後會快很多。<br>建議用電腦的鍵盤和滑鼠遊玩。</p>
+		<p class="hint" data-i18n="hint">第一次載入約 18 MB，之後會快很多。<br>建議用電腦的鍵盤和滑鼠遊玩。</p>
 	</div>
 </div>
 
 <script>
+// 語言（第 7.5 段）：遊戲裡選過的語言記在 localStorage（Lang.gd 寫入）；沒選過就看瀏覽器語言。
+const LANG = (function () {
+	try {
+		const saved = localStorage.getItem('cozy_mart_lang');
+		if (saved === 'ja' || saved === 'zh') return saved;
+	} catch (e) { /* 瀏覽器擋了儲存空間就算了 */ }
+	return /^ja\b/i.test(navigator.language || '') ? 'ja' : 'zh';
+}());
+const JA = {
+	title: 'ぬくぬく商店',
+	canvas: 'お使いのブラウザは canvas に対応していません。',
+	opening: 'お店を開けています…',
+	hint: '初回の読み込みは約 18 MB、2 回目からはずっと速くなります。<br>パソコンのキーボードとマウスで遊ぶのがおすすめです。',
+	loading: '商品を棚に並べています… ',
+	ready: 'スタッフが準備中…',
+	unknown: '原因不明のエラーが発生しました。',
+	stuck: 'お店のドアが開きません…\n',
+	retry: '\n\n最新版の Chrome・Edge・Firefox でもう一度お試しください。',
+	missing: 'ブラウザに次の機能がありません：\n',
+};
+const ZH = {
+	loading: '正在搬貨上架… ',
+	ready: '店員準備中…',
+	unknown: '發生未知的錯誤。',
+	stuck: '店門卡住了，打不開…\n',
+	retry: '\n\n請改用最新版的 Chrome、Edge 或 Firefox 再試一次。',
+	missing: '瀏覽器缺少這些功能：\n',
+};
+function tr(key) { return (LANG === 'ja' ? JA : ZH)[key]; }
+if (LANG === 'ja') {
+	document.documentElement.lang = 'ja';
+	document.title = JA.title;
+	document.querySelectorAll('[data-i18n]').forEach(function (el) {
+		const v = JA[el.getAttribute('data-i18n')];
+		if (v) el.innerHTML = v;
+	});
+} else {
+	document.documentElement.lang = 'zh-Hant';
+}
+
 // 打包成 artifact 時，build_web.py 會在這裡填入「原檔名 → gzip 壓縮檔」的對照表。
 // 瀏覽器抓這些檔案時改抓壓縮檔，再用內建的 DecompressionStream 解壓，所以單檔可以小於主機的上限。
-const GZ_ASSETS = /*GZ_ASSETS*/{"index.pck": "index.pck.gz.wasm", "index.wasm": ["index.wasm.gz.0.wasm", "index.wasm.gz.1.wasm"]}/*END_GZ_ASSETS*/;
+const GZ_ASSETS = /*GZ_ASSETS*/{"index.pck": ["index.pck.gz.0.wasm", "index.pck.gz.1.wasm"], "index.wasm": ["index.wasm.gz.0.wasm", "index.wasm.gz.1.wasm"]}/*END_GZ_ASSETS*/;
 (function patchFetchForGzip() {
 	if (Object.keys(GZ_ASSETS).length === 0) return;
 	if (!('DecompressionStream' in window)) return;
@@ -153,7 +195,7 @@ const GZ_ASSETS = /*GZ_ASSETS*/{"index.pck": "index.pck.gz.wasm", "index.wasm": 
 </script>
 <script src="index.js"></script>
 <script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":3856676,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":9239724,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -166,14 +208,14 @@ const engine = new Engine(GODOT_CONFIG);
 
 	function fail(err) {
 		console.error(err);
-		let msg = err instanceof Error ? err.message : String(err || '發生未知的錯誤。');
-		notice.textContent = '店門卡住了，打不開…\n' + msg + '\n\n請改用最新版的 Chrome、Edge 或 Firefox 再試一次。';
+		let msg = err instanceof Error ? err.message : String(err || tr('unknown'));
+		notice.textContent = tr('stuck') + msg + tr('retry');
 		overlay.classList.add('failed');
 	}
 
 	const missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
 	if (missing.length !== 0) {
-		fail('瀏覽器缺少這些功能：\n' + missing.join('\n'));
+		fail(tr('missing') + missing.join('\n'));
 		return;
 	}
 
@@ -183,7 +225,7 @@ const engine = new Engine(GODOT_CONFIG);
 				const pct = Math.min(100, Math.round(current / total * 100));
 				bar.classList.remove('indeterminate');
 				fill.style.width = pct + '%';
-				text.textContent = pct < 100 ? '正在搬貨上架… ' + pct + '%' : '店員準備中…';
+				text.textContent = pct < 100 ? tr('loading') + pct + '%' : tr('ready');
 			}
 		},
 	}).then(function () {
