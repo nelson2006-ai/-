@@ -9,7 +9,7 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Zen+Maru+Gothic:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500&family=Huninn&family=Zen+Maru+Gothic:wght@500&display=swap">
 <link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 
@@ -30,6 +30,7 @@
 }
 /* 日文（第 7.5 段）：跟遊戲裡一樣用 Zen Maru Gothic */
 :root[lang="ja"] { --font-ui: "Zen Maru Gothic", "Huninn", "Hiragino Maru Gothic ProN", "Meiryo", sans-serif; }
+:root[lang="en"] { --font-ui: "Fredoka", "Huninn", sans-serif; }
 html, body { height: 100%; }
 body {
 	margin: 0;
@@ -99,7 +100,7 @@ h1 { margin: 0; font-size: 28px; font-weight: 400; letter-spacing: 0.08em; text-
 </style>
 
 <canvas id="canvas" data-i18n="canvas">你的瀏覽器不支援 canvas。</canvas>
-<noscript>需要開啟 JavaScript 才能遊玩。／JavaScript を有効にしてください。</noscript>
+<noscript>需要開啟 JavaScript 才能遊玩。／JavaScript を有効にしてください。／Please enable JavaScript to play.</noscript>
 
 <div id="status" role="status" aria-live="polite">
 	<div class="card">
@@ -126,9 +127,12 @@ h1 { margin: 0; font-size: 28px; font-weight: 400; letter-spacing: 0.08em; text-
 const LANG = (function () {
 	try {
 		const saved = localStorage.getItem('cozy_mart_lang');
-		if (saved === 'ja' || saved === 'zh') return saved;
+		if (saved === 'ja' || saved === 'zh' || saved === 'en') return saved;
 	} catch (e) { /* 瀏覽器擋了儲存空間就算了 */ }
-	return /^ja\b/i.test(navigator.language || '') ? 'ja' : 'zh';
+	const nav = navigator.language || '';
+	if (/^ja\b/i.test(nav)) return 'ja';
+	if (/^zh\b/i.test(nav) || nav === '') return 'zh';
+	return 'en';
 }());
 const JA = {
 	title: 'ぬくぬく商店',
@@ -150,12 +154,25 @@ const ZH = {
 	retry: '\n\n請改用最新版的 Chrome、Edge 或 Firefox 再試一次。',
 	missing: '瀏覽器缺少這些功能：\n',
 };
-function tr(key) { return (LANG === 'ja' ? JA : ZH)[key]; }
-if (LANG === 'ja') {
-	document.documentElement.lang = 'ja';
-	document.title = JA.title;
+const EN = {
+	title: 'Cozy Corner Mart',
+	canvas: 'Your browser does not support canvas.',
+	opening: 'Opening the shop…',
+	hint: 'The first load is about 18 MB — it will be much faster next time.<br>Best played with a keyboard and mouse.',
+	loading: 'Stocking the shelves… ',
+	ready: 'The staff are getting ready…',
+	unknown: 'An unknown error occurred.',
+	stuck: 'The shop door is stuck…\n',
+	retry: '\n\nPlease try again with the latest Chrome, Edge or Firefox.',
+	missing: 'Your browser is missing these features:\n',
+};
+function tr(key) { return (LANG === 'ja' ? JA : LANG === 'en' ? EN : ZH)[key]; }
+if (LANG === 'ja' || LANG === 'en') {
+	const T = LANG === 'ja' ? JA : EN;
+	document.documentElement.lang = LANG;
+	document.title = T.title;
 	document.querySelectorAll('[data-i18n]').forEach(function (el) {
-		const v = JA[el.getAttribute('data-i18n')];
+		const v = T[el.getAttribute('data-i18n')];
 		if (v) el.innerHTML = v;
 	});
 } else {
@@ -195,7 +212,7 @@ const GZ_ASSETS = /*GZ_ASSETS*/{"index.pck": ["index.pck.gz.0.wasm", "index.pck.
 </script>
 <script src="index.js"></script>
 <script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":9458396,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":9672472,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
