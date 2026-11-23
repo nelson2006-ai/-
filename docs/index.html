@@ -181,7 +181,7 @@ if (LANG === 'ja' || LANG === 'en') {
 
 // 打包成 artifact 時，build_web.py 會在這裡填入「原檔名 → gzip 壓縮檔」的對照表。
 // 瀏覽器抓這些檔案時改抓壓縮檔，再用內建的 DecompressionStream 解壓，所以單檔可以小於主機的上限。
-const GZ_ASSETS = /*GZ_ASSETS*/{"index.pck": ["index.pck.gz.0.wasm", "index.pck.gz.1.wasm"], "index.wasm": ["index.wasm.gz.0.wasm", "index.wasm.gz.1.wasm"]}/*END_GZ_ASSETS*/;
+const GZ_ASSETS = /*GZ_ASSETS*/{"game.pck": ["game.pck.gz.0.wasm", "game.pck.gz.1.wasm"], "index.pck": ["index.pck.gz.0.wasm", "index.pck.gz.1.wasm"], "index.wasm": ["index.wasm.gz.0.wasm", "index.wasm.gz.1.wasm"]}/*END_GZ_ASSETS*/;
 (function patchFetchForGzip() {
 	if (Object.keys(GZ_ASSETS).length === 0) return;
 	if (!('DecompressionStream' in window)) return;
@@ -212,7 +212,7 @@ const GZ_ASSETS = /*GZ_ASSETS*/{"index.pck": ["index.pck.gz.0.wasm", "index.pck.
 </script>
 <script src="index.js"></script>
 <script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":15413588,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":13443516,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
